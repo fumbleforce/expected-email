@@ -1,0 +1,45 @@
+{
+    "extends": "airbnb",
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true
+    },
+    "parser": "babel-eslint",
+    "ecmaFeatures": {
+      "arrowFunctions": true,
+      "blockBindings": true,
+      "classes": true,
+      "defaultParams": true,
+      "destructuring": true,
+      "forOf": true,
+      "generators": false,
+      "modules": true,
+      "objectLiteralComputedProperties": true,
+      "objectLiteralDuplicateProperties": false,
+      "objectLiteralShorthandMethods": true,
+      "objectLiteralShorthandProperties": true,
+      "spread": true,
+      "superInFunctions": true,
+      "templateStrings": true,
+      "jsx": true
+    },
+    "plugins": [
+        "react",
+        "jsx-a11y",
+        "import"
+    ],
+    "rules": {
+      "react/react-in-jsx-scope": "off",
+      "react/jsx-filename-extension": "off",
+      "jsx-a11y/label-has-for": "off",
+
+      "consistent-return": "off",
+      "comma-dangle": "off",
+      "no-console": "off",
+      "no-underscore-dangle": "off",
+      "arrow-parens": "off",
+      "space-before-function-paren": "off",
+      "quotes": ["error", "double", "avoid-escape"]
+    }
+}

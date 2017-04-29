@@ -1,0 +1,73 @@
+{
+  "name": "expected-email",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node app.js",
+    "build": "NODE_ENV='production' next build",
+    "start": "NODE_ENV='production' next start",
+    "lint": "./node_modules/.bin/eslint . --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "autoprefixer": "^6.7.7",
+    "babel-plugin-module-resolver": "^2.7.0",
+    "babel-plugin-wrap-in-js": "^1.1.1",
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "express-session": "^1.15.2",
+    "isomorphic-unfetch": "^1.0.0",
+    "lodash": "^4.17.4",
+    "lusca": "^1.4.1",
+    "mailgun-js": "^0.10.1",
+    "moment": "^2.18.1",
+    "mongodb": "^2.2.26",
+    "next": "^2.2.0",
+    "node-cron": "^1.1.3",
+    "nodemailer": "^4.0.1",
+    "passport": "^0.3.2",
+    "passport-facebook": "^2.1.1",
+    "passport-google-oauth": "^1.0.0",
+    "passport-twitter": "^1.0.4",
+    "postcss-easy-import": "^2.0.0",
+    "prop-types": "^15.5.8",
+    "react": "^15.5.4",
+    "react-datetime": "^2.8.10",
+    "react-dom": "^15.5.4",
+    "session-file-store": "^1.0.0",
+    "styled-jsx": "^0.5.7",
+    "uuid": "^3.0.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "dotenv": "^4.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3"
+  },
+  "babel": {
+    "presets": [
+      "next/babel"
+    ],
+    "ignore": [
+      ".next",
+      "build"
+    ]
+  },
+  "now": {
+    "env": {
+      "MONGO_USER": "@mongo-user",
+      "MONGO_PW": "@mongo-pw",
+      "EMAIL_HOST": "@emai-host",
+      "EMAIL_USER": "@email-user",
+      "EMAIL_PASSWORD": "@email-pw",
+      "NODE_ENV": "production"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+*, body {
+  color: #484848;
+  font-family: "Open Sans",Verdana,Arial,Helvetica,sans-serif;
+}
+
+.red-color {
+  color: #FF5757;
+}
+
+.button.button-primary, button.button-primary, input[type="submit"].button-primary, input[type="reset"].button-primary, input[type="button"].button-primary {
+  background-color: #FF5757;
+  border-color: #FF5757;
+  transition: all 0.1s ease-in-out 0s;
+}
+.button.button-primary:hover, button.button-primary:hover, input[type="submit"].button-primary:hover, input[type="reset"].button-primary:hover, input[type="button"].button-primary:hover, .button.button-primary:focus, button.button-primary:focus, input[type="submit"].button-primary:focus, input[type="reset"].button-primary:focus, input[type="button"].button-primary:focus {
+  background-color: #ff0f0f;
+  border-color: #ff0f0f;
+}
+
+.logo {
+  height: 38px;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+header {
+  box-shadow: 0 1px 0 0 rgba(0,0,0,0.066);
+}
+
+table {
+  width: 100%;
+}
+
+header a {
+  font-weight: 600;
+  font-size: 13px;
+  padding: 20px 26px;
+  color: #484848;
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  transition: all 0.1s ease-in-out 0s;
+}
+header a.active {
+  color: #FF5757;
+}
+
+header a.active:after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 18px;
+  right: 18px;
+  height: 3px;
+  background: #FF5757;
+}
+header a:hover {
+  color: #484848;
+  background: rgba(0,0,0,0.04);
+}
+
+
+main {
+  margin: 0 auto;
+  padding-top: 45px;
+}
+
+.border-right {
+  box-shadow: 1px 0 0 0 rgba(0,0,0,0.066);
+}
+
+.sm-container {
+  width: 400px;
+  margin: 0 auto;
+}
+.container {
+  width: 800px;
+  margin: 0 auto;
+}
+
+.fade-in * {
+  opacity: 1;
+  animation-name: fadeInOpacity;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-out;
+  animation-duration: 400ms;
+}
+
+@keyframes fadeInOpacity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
