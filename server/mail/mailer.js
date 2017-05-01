@@ -27,7 +27,7 @@ const dummyTransporter = {
 if (!dev) {
   // verify connection configuration
   standardTransporter.verify((error, success) => {
-    if (error) {
+    if (error || !success) {
       console.error("[Mailer] Error verifying mail transporter", error);
     } else {
       console.log("[Mailer] Standard transporter verified");
@@ -42,23 +42,45 @@ function getTransporter () {
   return standardTransporter;
 }
 
+function createTransport (data) {
+  const {
+    host,
+    user,
+    password
+  } = data;
+
+  return nodemailer.createTransport({
+    host,
+    auth: {
+      user,
+      pass: password,
+    },
+  });
+}
+
 function verifyTransport (data) {
   return new Promise((resolve, reject) => {
+    console.log("[Mailer] Verifying transport", data);
     const transport = nodemailer.createTransport(data);
     transport.verify((error, res) => {
-      console.log(error, res);
       if (error) return reject(error);
       return resolve(res);
     });
   });
 }
 
-function send (data, transporter, callback = noop) {
-  transporter.sendMail(data, callback);
+function sendMail (transport, data) {
+  return new Promise((resolve, reject) => {
+    transport.sendMail(data, (err, res) => {
+      if (err) return reject(err);
+      return resolve(res);
+    });
+  });
 }
 
 module.exports = {
-  send,
+  sendMail,
   verifyTransport,
   getTransporter,
+  createTransport
 };

@@ -1,10 +1,8 @@
-const { Mails } = require("../collections");
-const { getTransporter } = require("./mailer");
+const { Mails, Transports } = require("../collections");
+const { createTransport } = require("./mailer");
 
 async function checkMail () {
   console.log("[Mailer] Checking mail");
-
-  const transporter = getTransporter();
 
   let mails;
   try {
@@ -18,11 +16,27 @@ async function checkMail () {
     return console.log("[Mailer] No mail to send");
   }
 
-  mails.forEach(mail => {
+  mails.forEach(async (mail) => {
     console.log("[Mailer] Sending unsent mail", mail);
-    transporter.sendMail(mail);
-    console.log("[Mailer] Marking mail as sent");
-    Mails.update(mail._id, {
+    const {
+      from,
+      to,
+      subject,
+      text,
+    } = mail;
+
+    const transport = await Transports.findOne(from);
+    const emailTransport = createTransport(transport);
+
+    emailTransport.sendMail({
+      from: transport.email,
+      to,
+      subject,
+      text,
+    });
+
+    console.log(`[Mailer] Marking mail from ${transport.email} as sent`);
+    Mails.updateOne(mail._id, {
       $set: { sent: true },
     });
   });

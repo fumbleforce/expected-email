@@ -24,6 +24,25 @@ function promisedFindQuery (collection, selector, options) {
   });
 }
 
+function promisedUpdateQuery (collection, selector, changes, options) {
+  return new Promise((resolve, reject) => {
+    const q = objectAndIdQuery(selector);
+
+    if (options.multi) {
+      collection.updateMany(q, changes, options, (err, res) => {
+        if (err) return reject(err);
+        return resolve(res);
+      });
+    } else {
+      collection.updateOne(q, changes, options, (err, res) => {
+        if (err) return reject(err);
+        return resolve(res);
+      });
+    }
+  });
+}
+
+
 function promisedInsertOne (collection, doc) {
   return new Promise((resolve, reject) => {
     if (!_.isObject(doc)) {
@@ -109,6 +128,32 @@ class Collection {
       _.extend(options, {
         limit: 1,
         one: true
+      })
+    );
+  }
+
+  updateOne (selector = {}, changes = {}, options = {}, cb) {
+    if (cb) throw new Error("Collection wrappers do not take callbacks, but returns a promise");
+    if (!this.initialized) throw new Error(`Collection ${this.name} not initialized`);
+    console.log(`[Collection][${this.name}] updateOne`);
+    return promisedUpdateQuery(
+      this.collection,
+      selector,
+      changes,
+      options
+    );
+  }
+
+  updateMany (selector = {}, changes = {}, options = {}, cb) {
+    if (cb) throw new Error("Collection wrappers do not take callbacks, but returns a promise");
+    if (!this.initialized) throw new Error(`Collection ${this.name} not initialized`);
+    console.log(`[Collection][${this.name}] updateMany`);
+    return promisedUpdateQuery(
+      this.collection,
+      selector,
+      changes,
+      _.extend(options, {
+        multi: true
       })
     );
   }

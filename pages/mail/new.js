@@ -1,5 +1,4 @@
 import { Component } from "react";
-import Link from "next/link";
 import Datetime from "react-datetime";
 import fetch from "isomorphic-unfetch";
 import _ from "lodash";
@@ -61,20 +60,19 @@ NewMailView.propTypes = {
   }).isRequired,
 };
 
-const NewMailForm = ({ handleChange, handleDateChange, formData }) => (
+const NewMailForm = ({ handleChange, handleDateChange, formData, transports }) => (
   <form onSubmit={e => e.preventDefault()}>
     <div className="row">
       <div className="six columns">
         <label htmlFor="from">
           From
         </label>
-        <input
-          className="u-full-width"
-          onChange={handleChange}
-          type="email"
-          name="from"
-          id="from"
-        />
+        <select id="from" name="from" onChange={handleChange}>
+          <option value="">Choose address</option>
+          {transports.map(t => (
+            <option key={t._id} value={t._id}>{t.email}</option>
+          ))}
+        </select>
       </div>
       <div className="six columns">
         <label htmlFor="to">
@@ -134,6 +132,22 @@ NewMailForm.propTypes = {
 
 
 class NewMail extends Component {
+  static async getInitialProps ({ req }) {
+    const baseUrl = req ? `${req.protocol}://${req.get("Host")}` : "";
+    const res = await fetch(`${baseUrl}/api/transport`, req ? {
+      headers: { cookie: req.headers.cookie }
+    } : {});
+    const { transports, error } = await res.json();
+
+    if (error) {
+      return console.error(error);
+    }
+
+    console.log("Transports", transports);
+
+    return { transports };
+  }
+
   state = {
     formData: {},
   }
@@ -221,6 +235,7 @@ class NewMail extends Component {
 
   render () {
     const { formData, sending } = this.state;
+    const { transports = [] } = this.props;
 
     return (
       <Layout {...this.props}>
@@ -232,6 +247,7 @@ class NewMail extends Component {
                 New mail
               </h2>
               <NewMailForm
+                transports={transports}
                 formData={formData}
                 handleChange={this.handleChange}
                 handleDateChange={this.handleDateChange}

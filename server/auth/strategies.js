@@ -20,7 +20,7 @@ async function linkExistingUserToProvider (id, provider, userData) {
     [provider]: userData._id
   });
 
-  return Users.update(userData._id, updatedUser);
+  return Users.updateOne(userData._id, updatedUser);
 }
 
 async function createUserFromProvider (userData, provider, done) {
@@ -74,47 +74,48 @@ function addProviderStrategy ({
       const userData = getUserFromProfile(profile);
 
       // See if we have this oAuth account in the database associated with a user
-      Users.findOne({ [provider]: userData._id }, (getProviderUserErr, existingProviderUser) => {
-        if (getProviderUserErr) {
-          return done(getProviderUserErr);
+      let existingProviderUser;
+      try {
+        existingProviderUser = Users.findOne({ [provider]: userData._id });
+      } catch (e) {
+        return done(e);
+      }
+
+      const loggedInUser = req.user;
+      const isLoggedIn = !!loggedInUser;
+
+      if (isLoggedIn) {
+        // If the current session is signed in
+
+        // If the oAuth account is not linked to another account, link it and exit
+        if (!existingProviderUser) {
+          return linkExistingUserToProvider(req.user._id, provider, userData, done);
         }
 
-        const loggedInUser = req.user;
-        const isLoggedIn = !!loggedInUser;
-
-        if (isLoggedIn) {
-          // If the current session is signed in
-
-          // If the oAuth account is not linked to another account, link it and exit
-          if (!existingProviderUser) {
-            return linkExistingUserToProvider(req.user._id, provider, userData, done);
-          }
-
-          // If oAuth account already linked to the current user, just exit
-          const isLinkedToProvider = req.user._id === existingProviderUser._id;
-          if (isLinkedToProvider) {
-            return done(null, existingProviderUser);
-          }
-
-          // If the oAuth account is already linked to different account, exit with error
-          if (req.user._id !== existingProviderUser._id) {
-            return done(
-              new Error("This account is already associated with another login.")
-            );
-          }
-        } else {
-          // If the current session is not signed in
-
-          // If we have the oAuth account in the db then let them sign in as that user
-          if (existingProviderUser) {
-            return done(null, existingProviderUser);
-          }
-
-          // If we don"t have the oAuth account in the db, check to see if an account with the
-          // same email address as the one associated with their oAuth acccount exists in the db
-          return createUserFromProvider(userData, provider, done);
+        // If oAuth account already linked to the current user, just exit
+        const isLinkedToProvider = req.user._id === existingProviderUser._id;
+        if (isLinkedToProvider) {
+          return done(null, existingProviderUser);
         }
-      });
+
+        // If the oAuth account is already linked to different account, exit with error
+        if (req.user._id !== existingProviderUser._id) {
+          return done(
+            new Error("This account is already associated with another login.")
+          );
+        }
+      } else {
+        // If the current session is not signed in
+
+        // If we have the oAuth account in the db then let them sign in as that user
+        if (existingProviderUser) {
+          return done(null, existingProviderUser);
+        }
+
+        // If we don"t have the oAuth account in the db, check to see if an account with the
+        // same email address as the one associated with their oAuth acccount exists in the db
+        return createUserFromProvider(userData, provider, done);
+      }
     } catch (err) {
       done(err);
     }

@@ -1,10 +1,11 @@
 import React from "react";
-import Link from "next/link";
 import fetch from "isomorphic-unfetch";
 import moment from "moment";
+import Router from "next/router";
 
 import Layout from "../../components/Layout";
 import restricted from "../../components/restricted";
+import Session from "../../components/session";
 
 const renderTimeLeft = (mail) => {
   if (mail.sent) return "";
@@ -15,23 +16,24 @@ const renderTimeLeft = (mail) => {
 };
 
 class MailItem extends React.Component {
-
-  confirmRemove = () => {
+  confirmRemove = async () => {
     const { mail } = this.props;
 
-    confirm("Are you sure you want to remove this mail? This is irreversible", agree => {
-      console.log(agree);
-      if (agree) {
-        console.log("Deleting mail..");
-        fetch(`/api/mail/${mail._id}`, {
-          method: "DELETE",
-        }, resultProm => {
-          console.log("DELETED mail", mail._id);
-          const result = resultProm.json();
-          console.log(result);
-        });
-      }
-    });
+    if (confirm("Are you sure you want to remove this mail? This is irreversible")) {
+      console.log("Deleting mail..");
+      const _csrf = await Session.getCsrfToken();
+      const resultProm = await fetch(`/api/mail/${mail._id}`, {
+        method: "DELETE",
+        headers: {
+          "x-csrf-token": _csrf,
+        },
+        credentials: "include",
+      });
+      console.log("DELETED mail", mail._id);
+      const result = await resultProm.json();
+      console.log(result);
+      location.reload();
+    }
   }
 
   render () {
@@ -103,12 +105,16 @@ Mails.defaultProps = {
 
 Mails.getInitialProps = async ({ req }) => {
   const baseUrl = req ? `${req.protocol}://${req.get("Host")}` : "";
-  const res = await fetch(`${baseUrl}/api/mail`);
-  const data = await res.json();
+  const res = await fetch(`${baseUrl}/api/mail`, req ? {
+    headers: { cookie: req.headers.cookie }
+  } : {});
+  const { error, mails } = await res.json();
 
-  console.log("Mails", data.mails);
+  if (error) {
+    throw error;
+  }
 
-  return { mails: data.mails };
+  return { mails };
 };
 
 export default restricted(Mails);

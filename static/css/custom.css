@@ -21,6 +21,8 @@ body {
 }
 
 input,
+select,
+option,
 textarea {
   color: #222;
 }
@@ -138,4 +140,9 @@ main {
   100% {
     opacity: 1;
   }
+}
+
+/* Datepickker */
+.rdt * {
+  color: #222;
 }

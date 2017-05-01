@@ -10,10 +10,6 @@
  * purposes of this example all server logic related to authentication is here.
  */
 
-const expressSession = require("express-session");
-const FileStore = require("session-file-store")(expressSession);
-const csrf = require("lusca").csrf();
-
 const passportStrategies = require("./strategies");
 const authRoutes = require("./routes");
 
@@ -27,14 +23,6 @@ exports.configure = ({
     path = "/auth",
     // Directory in ./pages/ where auth pages can be found
     pages = "auth",
-    // Secret used to encrypt session data on the server
-    secret = "change-me",
-    // Sessions store for express-session (defaults to /tmp/sessions file store)
-    store = new FileStore({ path: "/tmp/sessions", secret }),
-    // Max session age in ms (default is 4 weeks)
-    // NB: With "rolling: true" passed to session() the session expiry time will
-    // be reset every time a user visits the site again before it expires.
-    maxAge = 60000 * 60 * 24 * 7 * 4,
     // How often the client should revalidate the session in ms (default 60s)
     // Does not impact the session life on the server, but causes the client to
     // always refetch session info after N seconds has elapsed since last
@@ -52,28 +40,7 @@ exports.configure = ({
     throw new Error("server option must be an express server instance");
   }
 
-  // Configure sessions
-  server.use(expressSession({
-    secret,
-    store,
-    resave: false,
-    rolling: true,
-    saveUninitialized: true,
-    httpOnly: true,
-    cookie: {
-      maxAge,
-    },
-  }));
-
-  // Add CSRF to all POST requests
-  // (If you want to add exceptions to paths you can do that here)
-  // TODO GET THIS TO WORK
-  server.use((req, res, next) => {
-    csrf(req, res, next);
-  });
-
   console.log("[Auth] Calling configure passportStrategies");
-
   // With sessions connfigured (& before routes) we need to configure Passport
   // and trigger passport.initialize() before we add any routes
   passportStrategies.configure({

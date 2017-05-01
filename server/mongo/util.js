@@ -12,7 +12,14 @@ function objectAndIdQuery (q) {
   if (_.isUndefined(q)) throw new Error("query is undefined");
   if (isObjectID(q)) return { _id: q };
   if (_.isString(q)) return { _id: ObjectID(q) };
-  if (_.isObject(q)) return q;
+  if (_.isObject(q)) {
+    if (q._id && _.isString(q._id)) {
+      return _.extend(q, {
+        _id: ObjectID(q._id)
+      });
+    }
+    return q;
+  }
   throw new Error(`Unknown type of query ${q}`);
 }
 

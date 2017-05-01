@@ -1,8 +1,10 @@
 import React from "react";
 import fetch from "isomorphic-unfetch";
+import Router from "next/router";
 
 import Layout from "../../components/Layout";
 import restricted from "../../components/restricted";
+import Session from "../../components/session";
 
 
 class TransportItem extends React.Component {
@@ -12,12 +14,18 @@ class TransportItem extends React.Component {
 
     if (confirm("Are you sure you want to remove this address? This is irreversible")) {
       console.log("Deleting transport..");
+      const _csrf = await Session.getCsrfToken();
       const resultProm = await fetch(`/api/transport/${transport._id}`, {
         method: "DELETE",
+        headers: {
+          "x-csrf-token": _csrf,
+        },
+        credentials: "include",
       });
       console.log("DELETED transport", transport._id);
-      const result = resultProm.json();
+      const result = await resultProm.json();
       console.log(result);
+      location.reload();
     }
   }
 
@@ -84,12 +92,16 @@ Transports.defaultProps = {
 
 Transports.getInitialProps = async ({ req }) => {
   const baseUrl = req ? `${req.protocol}://${req.get("Host")}` : "";
-  const res = await fetch(`${baseUrl}/api/transport`);
-  const data = await res.json();
+  const res = await fetch(`${baseUrl}/api/transport`, req ? {
+    headers: { cookie: req.headers.cookie }
+  } : {});
+  const { error, transports } = await res.json();
 
-  console.log("Transports", data.transports);
+  if (error) {
+    throw error;
+  }
 
-  return { transports: data.transports };
+  return { transports };
 };
 
 export default restricted(Transports);

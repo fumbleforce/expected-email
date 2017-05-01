@@ -10,25 +10,26 @@ async function handleAddTransports (req, res) {
     password,
   } = req.body;
 
-  console.log("Session", req.session);
-  console.log("User", req.user);
-
-  if (!req.user) return res.json({ error: "not_logged_in" });
-  console.log("Is logged in");
+  if (!req.user) {
+    console.error("Not logged in in handle add transport");
+    return res.json({ error: "not_logged_in" });
+  }
   const userId = req.user._id;
 
   try {
     console.log("Verifying transport");
-    await verifyTransport({
+    const verified = await verifyTransport({
       host,
       auth: {
         user,
         pass: password,
       }
     });
-    console.log("Verified transport");
+    console.log("Verified transport", verified);
   } catch (error) {
+    console.error(error);
     if (error.code === "ECONNECTION") return res.json({ error: "invalid_host" });
+    if (error.code === "EAUTH") return res.json({ error: "invalid_user_or_password" });
     return res.json({ error: "invalid_transport" });
   }
 
@@ -49,9 +50,16 @@ async function handleAddTransports (req, res) {
 
 async function handleGetAllTransports (req, res) {
   console.log("[Transport handler] handleGetAllTransports");
-  console.log("Session", req.session, req.session.prototype, req.session.user, req.session._user, req.session._session, req.user);
+  if (!req.user) {
+    console.error("Not logged in in get all transports");
+    return res.json({ transports: [], waitingForAuth: true });
+  }
+  const userId = req.user._id;
+
   try {
-    const transports = await Transports.findMany({});
+    const transports = await Transports.findMany({
+      userId,
+    });
     return res.json({ transports });
   } catch (error) {
     return res.json({ error });
@@ -61,8 +69,17 @@ async function handleGetAllTransports (req, res) {
 async function handleDeleteTransports (req, res) {
   console.log("[Transport handler] handleDeleteTransports");
   const id = req.params.id;
+  if (!req.user) {
+    console.error("Not logged in in delete transports");
+    return res.json({ error: "not_logged_in" });
+  }
+  const userId = req.user._id;
+
   try {
-    await Transports.removeOne(id);
+    await Transports.removeOne({
+      _id: id,
+      userId,
+    });
     return res.json({ success: true });
   } catch (error) {
     return res.json({ error });
