@@ -1,62 +1,59 @@
 const passport = require("passport");
 
+const { Users } = require("../collections");
 const {
   getFacebookConfig,
   getGoogleConfig,
   getTwitterConfig
 } = require("./providers");
-const {
-  getUser,
-  createUser,
-  updateUser
-} = require("../api/user");
 
-function linkExistingUserToProvider (id, provider, userData, done) {
+async function linkExistingUserToProvider (id, provider, userData) {
   console.log(`[Auth] Linking user ${userData.email} to provider ${provider}`);
-  return getUser(id, (getUserErr, user) => {
-    if (getUserErr) {
-      return done(getUserErr);
-    }
 
-    const updatedUser = Object.assign(user, {
-      name: user.name || userData.name,
-      [provider]: userData._id
-    });
+  let user;
+  try {
+    user = await Users.findOne(id);
+  } catch (e) { throw new Error(`Error when finding user ${id}, ${e.message}`); }
 
-    return updateUser(userData._id, updatedUser, done);
+  const updatedUser = Object.assign(user, {
+    name: user.name || userData.name,
+    [provider]: userData._id
   });
+
+  return Users.update(userData._id, updatedUser);
 }
 
-function createUserFromProvider (userData, provider, done) {
+async function createUserFromProvider (userData, provider, done) {
   console.log(`[Auth] Creating user ${userData.email} from provider ${provider}`);
-  getUser({ email: userData.email }, (getUserError, userWithSameEmail) => {
-    if (getUserError) {
-      return done(getUserError);
-    }
-    // If we already have an account associated with that email address in the databases, the user
-    // should sign in with that account instead (to prevent them creating two accounts by mistake)
-    // Note: Automatically linking them here could expose a potential security exploit allowing someone
-    // to create an account for another users email address in advance then hijack it, so don"t do that.
-    if (userWithSameEmail) {
-      return done(
-        new Error("There is already an account associated with the same email address.")
-      );
-    }
+  const { name, email, _id } = userData;
 
-    const { name, email, _id } = userData;
+  let userWithSameEmail;
+  try {
+    userWithSameEmail = await Users.findOne({ email });
+  } catch (e) { throw new Error(`Error when finding user ${email}, ${e.message}`); }
 
-    // If account does not exist, create one for them and sign the user in
-    return createUser({
+  /* If we already have an account associated with that email address in the databases,
+     the user should sign in with that account instead
+     (to prevent them creating two accounts by mistake)
+
+     Note: Automatically linking them here could expose a potential security exploit
+     allowing someone to create an account for another users email address in advance
+     then hijack it, so don"t do that.
+  */
+  if (userWithSameEmail) {
+    return done(
+      new Error("There is already an account associated with the same email address.")
+    );
+  }
+
+  // If account does not exist, create one for them and sign the user in
+  try {
+    Users.insert({
       name,
       email,
       [provider]: _id
-    }, (createError, createdUser) => {
-      if (createError) {
-        return done(createError);
-      }
-      return done(null, createdUser);
     });
-  });
+  } catch (e) { throw new Error(`Error when inserting user ${email}, ${e.message}`); }
 }
 
 function addProviderStrategy ({
@@ -77,7 +74,7 @@ function addProviderStrategy ({
       const userData = getUserFromProfile(profile);
 
       // See if we have this oAuth account in the database associated with a user
-      getUser({ [provider]: userData._id }, (getProviderUserErr, existingProviderUser) => {
+      Users.findOne({ [provider]: userData._id }, (getProviderUserErr, existingProviderUser) => {
         if (getProviderUserErr) {
           return done(getProviderUserErr);
         }
@@ -149,7 +146,7 @@ exports.configure = ({
     server = null, // Express Server
     path = "/auth" // URL base path for authentication routes
   } = {}) => {
-  console.log(`[Auth] Configuring passport providers`);
+  console.log("[Auth] Configuring passport providers");
 
   if (app === null) {
     throw new Error("app option must be a next server instance");
@@ -162,17 +159,20 @@ exports.configure = ({
   // Tell Passport how to seralize/deseralize user accounts
   passport.serializeUser((user, done) => done(null, user._id));
 
-  passport.deserializeUser((_id, done) =>
-    getUser(_id, (err, { name, email }) =>
+  passport.deserializeUser(async (_id, done) => {
+    try {
+      const { name, email } = await Users.findOne(_id);
       // Note: We don"t return all user profile fields to the client, just ones
       // that are whitelisted here to limit the amount of users" data we expose.
-      done(err, {
+      done(null, {
         _id,
         name,
         email,
-      })
-    )
-  );
+      });
+    } catch (e) {
+      done(e);
+    }
+  });
 
   const providers = [];
 

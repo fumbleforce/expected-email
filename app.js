@@ -1,6 +1,7 @@
 const express = require("express");
 const next = require("next");
 const bodyParser = require("body-parser");
+const _ = require("lodash");
 
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
@@ -11,10 +12,7 @@ if (dev) {
 }
 
 // Needs to be after import of dotenv to utilize env variables
-const { connect } = require("./server/database");
-const router = require("./server/router");
-const auth = require("./server/auth");
-const cron = require("./server/cron");
+const { connect } = require("./server/mongo/connection");
 
 const handle = app.getRequestHandler();
 
@@ -27,17 +25,6 @@ app.prepare()
   server.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true,
   }));
-
-  // Hook up database
-  await connect();
-
-  // Api routes
-  router(server);
-  auth(app, server);
-
-  // Client page routes
-  server.get("*", (req, res) => handle(req, res));
-
   // Set vary header (good practice)
   // It's Vary important for performance
   server.use((req, res, nextStep) => {
@@ -45,12 +32,39 @@ app.prepare()
     nextStep();
   });
 
+  // Hook up database
+  await connect();
+
+  const collections = require("./server/collections");
+
+  await Promise.all(_.map(collections, c => c.init()));
+
+  const api = require("./server/api");
+  const auth = require("./server/auth");
+  const cron = require("./server/cron");
+
+  auth.configure({
+    app,
+    server,
+    secret: process.env.SESSION_SECRET,
+  });
+
+  api.configure({
+    app,
+    server
+  });
+
+  cron.start();
+
+  // Client page routes
+  server.get("*", (req, res) => {
+    return handle(req, res);
+  });
+
   server.listen(3000, (err) => {
     if (err) throw err;
     console.log("> Ready on http://localhost:3000");
   });
-
-  cron.start();
 })
 .catch((ex) => {
   console.error(ex.stack);

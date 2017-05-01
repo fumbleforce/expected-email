@@ -7,7 +7,7 @@ const HOST = process.env.EMAIL_HOST;
 const USER = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PW;
 
-console.log("[Maile] Mailer config", HOST, USER, PASSWORD);
+console.log("[Mailer] Configuring mail:", dev ? "Using dummy transporter" : `Connecting to ${USER}:${PASSWORD}@${HOST}`);
 
 // create reusable transporter object using the default SMTP transport
 const standardTransporter = nodemailer.createTransport({
@@ -42,15 +42,16 @@ function getTransporter () {
   return standardTransporter;
 }
 
-/* setup email data with unicode symbols
-let mailOptions = {
-  from: ""Fred Foo 👻" <foo@blurdybloop.com>", // sender address
-  to: "bar@blurdybloop.com, baz@blurdybloop.com", // list of receivers
-  subject: "Hello ✔", // Subject line
-  text: "Hello world ?", // plain text body
-  html: "<b>Hello world ?</b>" // html body
-};
-*/
+function verifyTransport (data) {
+  return new Promise((resolve, reject) => {
+    const transport = nodemailer.createTransport(data);
+    transport.verify((error, res) => {
+      console.log(error, res);
+      if (error) return reject(error);
+      return resolve(res);
+    });
+  });
+}
 
 function send (data, transporter, callback = noop) {
   transporter.sendMail(data, callback);
@@ -58,5 +59,6 @@ function send (data, transporter, callback = noop) {
 
 module.exports = {
   send,
+  verifyTransport,
   getTransporter,
 };

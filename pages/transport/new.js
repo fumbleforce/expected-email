@@ -1,6 +1,6 @@
 import { Component } from "react";
 import Link from "next/link";
-import Datetime from "react-datetime";
+import Router from "next/router";
 import fetch from "isomorphic-unfetch";
 import _ from "lodash";
 import moment from "moment";
@@ -8,6 +8,7 @@ import PropTypes from "prop-types";
 
 import Layout from "../../components/Layout";
 import restricted from "../../components/restricted";
+import Session from "../../components/session";
 
 const { shape, number, string, node, func } = PropTypes;
 
@@ -23,117 +24,91 @@ ErrorMessage.propTypes = {
   children: node.isRequired,
 };
 
-const NewMailView = ({ formData }) => (
+const NewTransportView = ({ formData }) => (
   <div>
     <div>
-      {formData.from || <ErrorMessage>Missing from</ErrorMessage>}
+      {formData.email || <ErrorMessage>Missing email</ErrorMessage>}
     </div>
     <div>
-      To: {formData.to || <ErrorMessage>Missing to</ErrorMessage>}
+      {formData.host || <ErrorMessage>Missing host</ErrorMessage>}
     </div>
     <div>
-      {
-        formData.sendAfter
-        ? `${(new Date(formData.sendAfter)).toString()}  ${moment(formData.sendAfter).fromNow()}`
-        : <ErrorMessage>Missing date</ErrorMessage>}
-    </div>
-    <hr />
-    <div>
-      {formData.subject
-        ? <h4>{formData.subject}</h4>
-        : <ErrorMessage>Missing subject</ErrorMessage>}
+      {formData.user
+        ? <h4>{formData.user}</h4>
+        : <ErrorMessage>Missing user</ErrorMessage>}
     </div>
     <div>
-      {formData.text
-        ? <pre>{formData.text}</pre>
-        : <ErrorMessage>Missing text</ErrorMessage>}
+      {formData.password
+        ? <pre>******</pre>
+        : <ErrorMessage>Missing password</ErrorMessage>}
     </div>
   </div>
 );
 
-NewMailView.propTypes = {
+NewTransportView.propTypes = {
   formData: shape({
-    from: string,
-    to: string,
-    sendAfter: number,
-    subject: string,
-    text: string,
+    email: string,
+    host: string,
+    user: string,
+    password: string,
   }).isRequired,
 };
 
-const NewMailForm = ({ handleChange, handleDateChange, formData }) => (
+const NewTransportForm = ({ handleChange }) => (
   <form onSubmit={e => e.preventDefault()}>
-    <div className="row">
-      <div className="six columns">
-        <label htmlFor="from">
-          From
-        </label>
-        <input
-          className="u-full-width"
-          onChange={handleChange}
-          type="email"
-          name="from"
-          id="from"
-        />
-      </div>
-      <div className="six columns">
-        <label htmlFor="to">
-          To
-        </label>
-        <input
-          className="u-full-width"
-          onChange={handleChange}
-          type="email"
-          name="to"
-          id="to"
-        />
-      </div>
-    </div>
+    <label htmlFor="email">
+      Email address
+    </label>
+    <input
+      className="u-full-width"
+      onChange={handleChange}
+      type="email"
+      name="email"
+      id="email"
+    />
 
-    <label htmlFor="subject">
-      Subject
+    <label htmlFor="host">
+      SMTP Host
     </label>
     <input
       className="u-full-width"
       onChange={handleChange}
       type="text"
-      name="subject"
-      id="subject"
+      name="host"
+      id="host"
     />
 
-    <label htmlFor="text">
-      Text
+    <label htmlFor="user">
+      User
     </label>
-    <textarea
+    <input
       className="u-full-width"
-      placeholder="Hi Dave …"
-      name="text"
       onChange={handleChange}
-      id="text"
+      name="user"
+      type="text"
+      id="user"
     />
 
-    <label htmlFor="sendAfter">
-      Send after
+    <label htmlFor="password">
+      Password
     </label>
-    <div>
-      {formData.sendAfter && moment(formData.sendAfter).fromNow()}
-    </div>
-    <Datetime
-      locale="nn"
-      utc={false}
-      onChange={handleDateChange}
+    <input
+      className="u-full-width"
+      onChange={handleChange}
+      name="password"
+      type="password"
+      id="password"
     />
 
   </form>
 );
 
-NewMailForm.propTypes = {
+NewTransportForm.propTypes = {
   handleChange: func.isRequired,
-  handleDateChange: func.isRequired,
 };
 
 
-class NewMail extends Component {
+class NewTransport extends Component {
   state = {
     formData: {},
   }
@@ -150,11 +125,10 @@ class NewMail extends Component {
     event.preventDefault();
 
     const requiredFields = [
-      "from",
-      "to",
-      "sendAfter",
-      "subject",
-      "text",
+      "email",
+      "host",
+      "user",
+      "password",
     ];
 
     const formData = this.state.formData;
@@ -165,16 +139,13 @@ class NewMail extends Component {
       return;
     }
 
-    const _csrf = this.props.session.csrfToken;
-
-    console.log("csrf", _csrf);
+    const _csrf = await Session.getCsrfToken();
 
     this.setState({ sending: true });
-    console.log("Valid, adding mail");
 
     let result;
     try {
-      const res = await fetch("/api/mail", {
+      const res = await fetch("/api/transport", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -186,7 +157,7 @@ class NewMail extends Component {
         }),
       });
 
-      if (res.statu === 200) {
+      if (res.status === 200) {
         result = await res.json();
       } else {
         console.error(res);
@@ -195,7 +166,8 @@ class NewMail extends Component {
     } catch (e) { return console.error(e); }
 
     if (result.success) {
-      alert("Scheduled mail");
+      alert("added transport");
+      Router.push("/transport");
     } else {
       alert(result.error);
     }
@@ -229,9 +201,9 @@ class NewMail extends Component {
           <div className="six columns border-right">
             <div className="sm-container">
               <h2>
-                New mail
+                New Transport
               </h2>
-              <NewMailForm
+              <NewTransportForm
                 formData={formData}
                 handleChange={this.handleChange}
                 handleDateChange={this.handleDateChange}
@@ -240,7 +212,7 @@ class NewMail extends Component {
           </div>
           <div className="six columns">
             <div className="sm-container">
-              <NewMailView
+              <NewTransportView
                 formData={formData}
               />
             </div>
@@ -262,4 +234,4 @@ class NewMail extends Component {
 }
 
 
-export default restricted(NewMail);
+export default restricted(NewTransport);

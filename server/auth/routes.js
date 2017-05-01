@@ -1,12 +1,11 @@
 const uuid = require("uuid/v4");
 
-const { getTransporter } = require("../mail/transports");
-const { getUser, createUser, updateUser } = require("../api/user");
+const { getTransporter } = require("../mail/mailer");
+const { Users } = require("../collections");
 
 exports.configure = ({
   app,
   pages,
-  serverUrl,
   server,
   path,
   clientMaxAge,
@@ -42,28 +41,28 @@ exports.configure = ({
     const email = req.body.email || null;
     console.log(`[Auth] Signing in with ${email}`);
 
-    if (!email || email.trim() === "") {
+    const emptyEmail = !email || email.trim() === "";
+    if (emptyEmail) {
       console.log("[Auth] Email is empty, rendering signin");
       return app.render(req, res, `${pages}/signin`, req.params);
     }
 
     const token = uuid();
-    const verificationUrl = (
-      serverUrl || `http://${req.headers.host}${path}/email/signin/${token}`
-    );
+    const verificationUrl = `http://${req.headers.host}${path}/email/signin/${token}`;
 
     console.log(`[Auth] Made verification url ${verificationUrl}`);
 
     // Create verification token save it to database
     // @FIXME Improve error handling
-    getUser({ email }, (getUserErr, user) => {
+    Users.findOne({ email })
+    .then((getUserErr, user) => {
       if (getUserErr) {
         throw getUserErr;
       }
 
       if (user) {
         console.log(`[Auth] User ${user._id} already exits, setting new token`);
-        updateUser(user._id, {
+        Users.update(user._id, {
           $set: { token }
         }, (tokenSaveErr) => {
           if (tokenSaveErr) {
@@ -72,7 +71,7 @@ exports.configure = ({
         });
       } else {
         console.log(`[Auth] Creating new user ${email} with token ${token}`);
-        createUser({
+        Users.insert({
           email,
           token
         }, (createUserErr) => {
@@ -110,7 +109,7 @@ exports.configure = ({
     }
 
     // Look up user by token
-    getUser({ token }, (userFormTokenErr, user) => {
+    Users.findOne({ token }, (userFormTokenErr, user) => {
       if (userFormTokenErr) {
         console.error(`[Auth] Error when finding user using ${token}`, userFormTokenErr);
         return res.redirect(`${path}/error`);
@@ -124,7 +123,7 @@ exports.configure = ({
       console.log(`[Auth] Found user ${user._id} with token ${token}, setting verified to true`);
 
       // Reset token and mark as verified
-      updateUser(user._id, {
+      Users.update(user._id, {
         $set: {
           token: null,
           verified: true

@@ -18,7 +18,7 @@ const withSession = (Component) => class extends React.Component {
       return alert(sessionError);
     }
     const isLoggedIn = sessionData.user && sessionData.user._id;
-    console.log("Is logged in", isLoggedIn);
+    console.log("[WithSession] Is logged in ?", !!isLoggedIn);
 
     return {
       ...initialProps,

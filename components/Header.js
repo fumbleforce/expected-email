@@ -18,7 +18,17 @@ const Header = ({ url, session, isLoggedIn }) => (
     )}
     {isLoggedIn && (
       <Link prefetch href="/mail/new">
-        <a className={url.pathname === "/mail/new" ? "active" : ""}>New</a>
+        <a className={url.pathname === "/mail/new" ? "active" : ""}>New mail</a>
+      </Link>
+    )}
+    {isLoggedIn && (
+      <Link prefetch href="/transport">
+        <a className={url.pathname === "/transport" ? "active" : ""}>Transports</a>
+      </Link>
+    )}
+    {isLoggedIn && (
+      <Link prefetch href="/transport/new">
+        <a className={url.pathname === "/transport/new" ? "active" : ""}>New transport</a>
       </Link>
     )}
 
@@ -29,7 +39,7 @@ const Header = ({ url, session, isLoggedIn }) => (
     )}
 
     {isLoggedIn && (
-      <SignoutButton style={{ float: "right", "margin": "10px" }} session={session}>Sign out</SignoutButton>
+      <SignoutButton style={{ float: "right", margin: "10px" }} session={session}>Sign out</SignoutButton>
     )}
   </header>
 );
