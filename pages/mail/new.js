@@ -61,8 +61,8 @@ NewMailView.propTypes = {
   }).isRequired,
 };
 
-const NewMailForm = ({ handleChange, handleSubmit, handleDateChange, sending, formData }) => (
-  <form onSubmit={handleSubmit}>
+const NewMailForm = ({ handleChange, handleDateChange, formData }) => (
+  <form onSubmit={e => e.preventDefault()}>
     <div className="row">
       <div className="six columns">
         <label htmlFor="from">
@@ -124,9 +124,6 @@ const NewMailForm = ({ handleChange, handleSubmit, handleDateChange, sending, fo
       onChange={handleDateChange}
     />
 
-    {!sending && (
-      <input className="button-primary" type="submit" value="Submit" />
-    )}
   </form>
 );
 
@@ -218,11 +215,9 @@ class NewMail extends Component {
                 New mail
               </h2>
               <NewMailForm
-                sending={sending}
                 formData={formData}
                 handleChange={this.handleChange}
                 handleDateChange={this.handleDateChange}
-                handleSubmit={this.handleSubmit}
               />
             </div>
           </div>
@@ -231,6 +226,16 @@ class NewMail extends Component {
               <NewMailView
                 formData={formData}
               />
+            </div>
+            <div className="text-center spaced">
+              {!sending && (
+                <button
+                  className="button-primary"
+                  onClick={this.handleSubmit}
+                >
+                  Submit
+                </button>
+              )}
             </div>
           </div>
         </div>

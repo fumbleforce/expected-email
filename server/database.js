@@ -2,9 +2,13 @@ const mongodb = require("mongodb");
 
 const MongoClient = mongodb.MongoClient;
 
+const dev = process.env.NODE_ENV !== "production";
 const username = process.env.MONGO_USER;
 const password = process.env.MONGO_PW;
-const url = `mongodb://${username}:${password}@ds017193.mlab.com:17193/mailtime`;
+
+const url = dev
+  ? "mongodb://localhost:27017/mailtime"
+  : `mongodb://${username}:${password}@ds017193.mlab.com:17193/mailtime`;
 
 console.log("[DB] Condiguring DB ", username, password);
 

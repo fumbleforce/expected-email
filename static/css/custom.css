@@ -1,5 +1,6 @@
 *, body {
-  color: #484848;
+  color: #fff;
+  background: #36454f;
   font-family: "Open Sans",Verdana,Arial,Helvetica,sans-serif;
 }
 
@@ -17,25 +18,37 @@
   border-color: #ff0f0f;
 }
 
+input,
+textarea {
+  color: #222;
+}
+
 .logo {
   height: 38px;
   vertical-align: middle;
   max-width: 100%;
 }
 
-header {
-  box-shadow: 0 1px 0 0 rgba(0,0,0,0.066);
+hr {
+  border: none;
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.066);
+  height: 1px;
 }
 
 table {
   width: 100%;
 }
 
+header {
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.066);
+  position: relative;
+}
+
 header a {
   font-weight: 600;
   font-size: 13px;
   padding: 20px 26px;
-  color: #484848;
+  color: #fff;
   text-decoration: none;
   display: inline-block;
   position: relative;
@@ -56,10 +69,16 @@ header a.active:after {
   background: #FF5757;
 }
 header a:hover {
-  color: #484848;
+  color: #fff;
   background: rgba(0,0,0,0.04);
 }
 
+h1 {
+  font-weight: bolder;
+  font-size: 60px;
+  margin: 1em 0;
+  text-rendering: optimizeLegibility;
+}
 
 main {
   margin: 0 auto;
@@ -67,7 +86,16 @@ main {
 }
 
 .border-right {
-  box-shadow: 1px 0 0 0 rgba(0,0,0,0.066);
+  box-shadow: 1px 0 0 0 rgba(255, 255, 255, 0.066);
+}
+
+.spaced {
+  margin-top: 50px !important;
+}
+
+.box {
+  border: 1px solid #eee;
+  padding: 2em;
 }
 
 .sm-container {
@@ -77,6 +105,10 @@ main {
 .container {
   width: 800px;
   margin: 0 auto;
+}
+
+.text-center {
+  text-align: center;
 }
 
 .fade-in * {

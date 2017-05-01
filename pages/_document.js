@@ -23,6 +23,8 @@ export default class IntlDocument extends Document {
     return (
       <html lang="en">
         <Head>
+          <title>Expexted.email</title>
+
           <meta name="viewport" content="initial-scale=1.0, width=device-width" />
           <link rel="stylesheet" href="/static/css/normalize.css" />
           <link rel="stylesheet" href="/static/css/skeleton.css" />

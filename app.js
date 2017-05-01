@@ -2,8 +2,6 @@ const express = require("express");
 const next = require("next");
 const bodyParser = require("body-parser");
 
-process.env.TZ = 'Europe/Amsterdam';
-
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 console.log(`[Next] Starting app in ${dev ? "dev" : "production"}`);

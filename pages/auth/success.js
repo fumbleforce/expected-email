@@ -15,7 +15,7 @@ export default class extends React.Component {
   render () {
     return (
       <Layout>
-        <div style={{ textAlign: "center" }}>
+        <div className="container text-center">
           <p>You are now signed in.</p>
           <p><Link prefetch href="/"><a>Continue</a></Link></p>
         </div>

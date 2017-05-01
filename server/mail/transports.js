@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 
 const { noop } = require("../util");
 
+const dev = process.env.NODE_ENV !== "production";
 const HOST = process.env.EMAIL_HOST;
 const USER = process.env.EMAIL_USER;
 const PASSWORD = process.env.EMAIL_PW;
@@ -17,17 +18,27 @@ const standardTransporter = nodemailer.createTransport({
   },
 });
 
-// verify connection configuration
-standardTransporter.verify((error, success) => {
-  if (error) {
-    console.error("[Mailer] Error verifying mail transporter", error);
-  } else {
-    console.log("[Mailer] Standard transporter verified");
+const dummyTransporter = {
+  sendMail (mail) {
+    console.log("[Mailer] Sending dummy mail", mail);
   }
-});
+};
+
+if (!dev) {
+  // verify connection configuration
+  standardTransporter.verify((error, success) => {
+    if (error) {
+      console.error("[Mailer] Error verifying mail transporter", error);
+    } else {
+      console.log("[Mailer] Standard transporter verified");
+    }
+  });
+}
 
 // TODO support user's own transports
 function getTransporter () {
+  if (dev) return dummyTransporter;
+
   return standardTransporter;
 }
 

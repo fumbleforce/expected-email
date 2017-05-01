@@ -57,7 +57,7 @@ function getUnsentMails (callback) {
 function markMailAsSent (q, callback = noop) {
   const query = objectAndIdQuery(q);
   const mails = getMailCollection();
-  console.log("Updating", query);
+  console.log("[Mail] Updating", query);
 
   mails.update(query, {
     $set: { sent: true },
@@ -71,10 +71,26 @@ function markMailAsSent (q, callback = noop) {
   });
 }
 
+function removeMail (q, callback = noop) {
+  const query = objectAndIdQuery(q);
+  const mails = getMailCollection();
+  console.log("[Mail] Removing", query);
+
+  mails.remove(query, (err, res) => {
+    if (err) {
+      console.error("[Mail] Failed to remove", err);
+    } else {
+      console.log("[Mail] Successfully removed mail");
+    }
+    callback(err, res);
+  });
+}
+
 
 module.exports = {
   createMail,
   getAllMail,
   getUnsentMails,
   markMailAsSent,
+  removeMail,
 };

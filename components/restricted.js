@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 import withSession from "./with-session";
 
@@ -10,8 +11,23 @@ const Unauthorized = () => (
   </div>
 );
 
-export default (Component) => {
-  const checkAuth = (props) => props.isLoggedIn ? <Component {...props} /> : <Unauthorized />;
+const restricted = (Component) => class extends React.Component {
+  static async getInitialProps (ctx) {
+    let initialProps = {};
+    if (Component.getInitialProps) {
+      initialProps = await Component.getInitialProps({ ...ctx });
+    }
 
-  return withSession(checkAuth);
+    return initialProps;
+  }
+
+  render () {
+    const props = this.props;
+
+    return props.isLoggedIn
+      ? <Component {...props} />
+      : <Unauthorized />;
+  }
 };
+
+export default (Component) => withSession(restricted(Component));

@@ -1,13 +1,13 @@
 import React from "react";
 import Session from "./session";
 
-export default (Component) => class extends React.Component {
+const withSession = (Component) => class extends React.Component {
   static async getInitialProps (ctx) {
     const session = new Session({ req: ctx.req });
 
     let initialProps = {};
     if (Component.getInitialProps) {
-      initialProps = Component.getInitialProps({ ...ctx, session });
+      initialProps = await Component.getInitialProps({ ...ctx, session });
     }
 
     let sessionData = {};
@@ -31,3 +31,5 @@ export default (Component) => class extends React.Component {
     return <Component {...this.props} />;
   }
 };
+
+export default withSession;
