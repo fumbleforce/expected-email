@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "node app.js",
-    "mongo-server": "mongod",
+    "mongo-server": "mongod --dbpath=/data/mailtime",
     "build": "NODE_ENV='production' next build",
     "start": "NODE_ENV='production' next start",
     "lint": "./node_modules/.bin/eslint . --fix",
@@ -69,6 +69,7 @@
       "EMAIL_HOST": "@emai-host",
       "EMAIL_USER": "@email-user",
       "EMAIL_PASSWORD": "@email-pw",
+      "SESSION_SECRET": "@session-secret",
       "NODE_ENV": "production"
     }
   }

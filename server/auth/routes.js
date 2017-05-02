@@ -63,7 +63,7 @@ exports.configure = ({
       });
     } else {
       console.log(`[Auth] Creating new user ${email} with token ${token}`);
-      await Users.insert({
+      await Users.insertOne({
         email,
         token
       });

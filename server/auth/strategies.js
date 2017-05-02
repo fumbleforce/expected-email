@@ -48,7 +48,7 @@ async function createUserFromProvider (userData, provider, done) {
 
   // If account does not exist, create one for them and sign the user in
   try {
-    Users.insert({
+    Users.insertOne({
       name,
       email,
       [provider]: _id
